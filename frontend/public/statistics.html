@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>統計資訊 - YouTube 高點閱影片搜尋器</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 24px;
+        }
+        h1 {
+            color: #1976d2;
+            margin-bottom: 8px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 24px;
+        }
+        .nav-links {
+            margin-bottom: 24px;
+        }
+        .nav-links a {
+            color: #1976d2;
+            text-decoration: none;
+            margin-right: 16px;
+        }
+        .nav-links a:hover {
+            text-decoration: underline;
+        }
+        .controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        button {
+            background: #1976d2;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #1565c0;
+        }
+        .stats-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        .stat-card {
+            background: #f5f5f5;
+            padding: 16px;
+            border-radius: 4px;
+            flex: 1;
+            min-width: 150px;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: 500;
+            color: #1976d2;
+        }
+        .section-title {
+            font-size: 18px;
+            font-weight: 500;
+            color: #1976d2;
+            margin: 24px 0 16px 0;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        .stats-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+        .stats-table th {
+            background: #f5f5f5;
+            padding: 12px;
+            text-align: left;
+            font-weight: 500;
+            border-bottom: 2px solid #ddd;
+        }
+        .stats-table td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+        .stats-table tr:hover {
+            background: #f9f9f9;
+        }
+        .query-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+        .query-table th {
+            background: #f5f5f5;
+            padding: 12px;
+            text-align: left;
+            font-weight: 500;
+            border-bottom: 2px solid #ddd;
+        }
+        .query-table td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+        .query-table tr:hover {
+            background: #f9f9f9;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .badge.success {
+            background: #4caf50;
+            color: white;
+        }
+        .badge.info {
+            background: #2196f3;
+            color: white;
+        }
+        .badge.warning {
+            background: #ff9800;
+            color: white;
+        }
+        .query-link {
+            color: #1976d2;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        .query-link:hover {
+            color: #1565c0;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 16px;
+            border-radius: 4px;
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav-links">
+            <a href="/">首頁</a>
+            <a href="/logs">日誌</a>
+            <a href="/statistics">統計</a>
+        </div>
+
+        <h1>統計資訊</h1>
+        <p class="subtitle">搜尋活動的整體統計和分析</p>
+        
+        <div class="controls">
+            <button onclick="loadStatistics()">重新載入</button>
+        </div>
+        
+        <div id="errorMessage"></div>
+        <div id="loadingMessage" class="loading">載入中...</div>
+        <div id="statisticsContent"></div>
+    </div>
+
+    <script>
+        async function loadStatistics() {
+            document.getElementById('loadingMessage').style.display = 'block';
+            document.getElementById('errorMessage').innerHTML = '';
+            document.getElementById('statisticsContent').innerHTML = '';
+
+            try {
+                const response = await fetch('/api/logs/statistics');
+                const data = await response.json();
+
+                if (data.success) {
+                    displayStatistics(data.statistics);
+                } else {
+                    throw new Error(data.message || '載入失敗');
+                }
+            } catch (error) {
+                document.getElementById('errorMessage').innerHTML = 
+                    `<div class="error">錯誤: ${error.message}</div>`;
+            } finally {
+                document.getElementById('loadingMessage').style.display = 'none';
+            }
+        }
+
+        function displayStatistics(stats) {
+            const { summary, topQueries } = stats;
+
+            let html = `
+                <div class="section-title">整體統計</div>
+                <div class="stats-bar">
+                    <div class="stat-card">
+                        <div class="stat-label">總搜尋次數</div>
+                        <div class="stat-value">${summary.totalSearches}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">今日搜尋次數</div>
+                        <div class="stat-value">${summary.todaySearches}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">總 API 請求</div>
+                        <div class="stat-value">${summary.totalApiRequests}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">今日 API 請求</div>
+                        <div class="stat-value">${summary.todayApiRequests}</div>
+                    </div>
+                </div>
+
+                <div class="section-title">結果統計</div>
+                <table class="stats-table">
+                    <thead>
+                        <tr>
+                            <th>項目</th>
+                            <th>數值</th>
+                            <th>說明</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>原始結果總數</strong></td>
+                            <td>${summary.totalRawResults.toLocaleString()}</td>
+                            <td>從 YouTube API 獲取的所有結果</td>
+                        </tr>
+                        <tr>
+                            <td><strong>過濾後結果</strong></td>
+                            <td>${summary.totalFilteredResults.toLocaleString()}</td>
+                            <td>符合點閱率 >= 1 億條件的結果</td>
+                        </tr>
+                        <tr>
+                            <td><strong>過濾率</strong></td>
+                            <td><span class="badge ${parseFloat(summary.filterRate) > 50 ? 'warning' : 'success'}">${summary.filterRate}</span></td>
+                            <td>過濾後結果佔原始結果的百分比</td>
+                        </tr>
+                        <tr>
+                            <td><strong>使用分頁次數</strong></td>
+                            <td>${summary.paginationUsed}</td>
+                            <td>使用分頁功能獲取更多結果的搜尋次數</td>
+                        </tr>
+                    </tbody>
+                </table>
+            `;
+
+            if (topQueries && topQueries.length > 0) {
+                html += `
+                    <div class="section-title">最常搜尋的關鍵字</div>
+                    <table class="query-table">
+                        <thead>
+                            <tr>
+                                <th>排名</th>
+                                <th>關鍵字</th>
+                                <th>搜尋次數</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                topQueries.forEach((item, index) => {
+                    html += `
+                        <tr>
+                            <td><strong>#${index + 1}</strong></td>
+                            <td>
+                                <span class="query-link" onclick="searchQuery('${item.query}')">
+                                    ${item.query}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge info">${item.count} 次</span>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                html += `
+                        </tbody>
+                    </table>
+                `;
+            } else {
+                html += '<p style="color: #666; margin-top: 16px;">尚無搜尋記錄</p>';
+            }
+
+            document.getElementById('statisticsContent').innerHTML = html;
+        }
+
+        function searchQuery(query) {
+            window.open(`/?query=${encodeURIComponent(query)}`, '_blank');
+        }
+
+        // 載入時自動載入統計
+        document.addEventListener('DOMContentLoaded', () => {
+            loadStatistics();
+        });
+    </script>
+</body>
+</html>

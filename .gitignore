@@ -1,0 +1,28 @@
+# 搜尋歷史檔案
+search-history.json
+
+# API 統計檔案
+api-stats.json
+
+# 搜尋和請求日誌檔案
+search-request-log.json
+
+# Node modules
+node_modules/
+frontend/node_modules/
+
+# 環境變數檔案
+.env
+key.env
+
+# 建置檔案
+frontend/build/
+frontend/dist/
+
+# 日誌檔案
+*.log
+npm-debug.log*
+
+# 系統檔案
+.DS_Store
+Thumbs.db

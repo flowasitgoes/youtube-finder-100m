@@ -95,4 +95,3 @@ npm run dev:frontend
 ## 授權
 
 ISC License
-# youtube-finder-100m
