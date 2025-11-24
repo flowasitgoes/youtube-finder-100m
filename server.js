@@ -21,6 +21,11 @@ const BASE_URL = 'https://www.googleapis.com/youtube/v3';
 // 搜尋影片的函數（支援分頁以獲取更多結果）
 async function searchVideos(query = '', maxResults = 50, minViewCount = 100000000, logData = {}) {
   try {
+    // 檢查配額（在發送請求前先檢查）
+    const stats = apiStats.getStats();
+    if (stats.todayRequests >= 9000) {
+      throw new Error('API 配額即將用盡，今日已使用 ' + stats.todayRequests + ' 單位，建議使用搜尋歷史功能');
+    }
     let allVideoIds = [];
     let nextPageToken = null;
     let searchRequestCount = 0;
@@ -165,6 +170,13 @@ async function searchVideos(query = '', maxResults = 50, minViewCount = 10000000
     };
   } catch (error) {
     console.error('搜尋影片時發生錯誤:', error.response?.data || error.message);
+    // 如果是配額錯誤，標記以便上層處理
+    if (error.response?.status === 403) {
+      const errorMessage = error.response?.data?.error?.message || '';
+      if (errorMessage.includes('quota') || errorMessage.includes('exceeded')) {
+        error.quotaExceeded = true;
+      }
+    }
     throw error;
   }
 }
@@ -195,10 +207,24 @@ app.get('/api/search', async (req, res) => {
     });
   } catch (error) {
     console.error('API 錯誤:', error);
-    res.status(500).json({
+    
+    // 檢查是否為配額用盡錯誤
+    if (error.quotaExceeded || error.response?.status === 403) {
+      const errorMessage = error.response?.data?.error?.message || error.message || '';
+      if (error.quotaExceeded || errorMessage.includes('quota') || errorMessage.includes('exceeded')) {
+        return res.status(403).json({
+          success: false,
+          error: 'API 配額已用盡',
+          message: 'YouTube API 的每日配額（10,000 單位）已用盡。請等待明天配額重置，或使用搜尋歷史查看之前的結果。',
+          quotaExceeded: true
+        });
+      }
+    }
+    
+    res.status(error.response?.status || 500).json({
       success: false,
       error: '搜尋失敗',
-      message: error.message
+      message: error.response?.data?.error?.message || error.message || '未知錯誤'
     });
   }
 });

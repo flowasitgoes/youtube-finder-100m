@@ -90,8 +90,11 @@ function App() {
         // 如果歷史記錄不存在，嘗試重新搜尋
         setError('歷史記錄不存在，正在重新搜尋...');
         setTimeout(() => handleSearch(searchQuery, null), 1000);
+      } else if (err.response?.status === 403 || err.response?.data?.quotaExceeded) {
+        // API 配額用盡
+        setError('YouTube API 配額已用盡。每日配額為 10,000 單位，請等待明天重置，或使用左側的搜尋歷史查看之前的結果。');
       } else {
-        setError(err.response?.data?.message || '搜尋失敗，請稍後再試');
+        setError(err.response?.data?.message || err.message || '搜尋失敗，請稍後再試');
       }
     } finally {
       setLoading(false);
