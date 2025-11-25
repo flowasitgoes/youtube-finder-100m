@@ -24,7 +24,8 @@ import {
   Select,
   MenuItem,
   FormControl,
-  InputLabel
+  InputLabel,
+  useMediaQuery
 } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import SearchIcon from '@mui/icons-material/Search';
@@ -81,6 +82,7 @@ const ParticleBackground = () => {
 };
 
 function App() {
+  const isMobile = useMediaQuery('(max-width: 767px)');
   const [query, setQuery] = useState('');
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -88,9 +90,13 @@ function App() {
   const [searchPerformed, setSearchPerformed] = useState(false);
   const [stats, setStats] = useState(null);
   const [searchHistory, setSearchHistory] = useState([]);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
   const [maxResults, setMaxResults] = useState(100);
   const [minViewCount, setMinViewCount] = useState(100000000);
+
+  useEffect(() => {
+    setSidebarOpen(!isMobile);
+  }, [isMobile]);
 
   const handleSearch = async (searchQuery = null, historyId = null) => {
     const queryToSearch = String(searchQuery || query || '').trim();
@@ -224,8 +230,9 @@ function App() {
       
       {/* 左側邊欄 - 搜尋歷史 */}
       <Drawer
-        variant="persistent"
+        variant={isMobile ? "temporary" : "persistent"}
         open={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
         sx={{
           width: { xs: '100%', sm: drawerWidth },
           flexShrink: 0,
@@ -356,7 +363,7 @@ function App() {
           zIndex: 1
         }}
       >
-        <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 }, px: { xs: 2, sm: 3 } }}>
           {!sidebarOpen && (
             <motion.div
               initial={{ opacity: 0, x: -20 }}
@@ -485,8 +492,8 @@ function App() {
             <Paper 
               elevation={0}
               sx={{ 
-                p: 4, 
-                mb: 4,
+                p: { xs: 2, sm: 4 }, 
+                mb: { xs: 2, sm: 4 },
                 background: 'rgba(255, 255, 255, 0.1)',
                 backdropFilter: 'blur(20px) saturate(180%)',
                 WebkitBackdropFilter: 'blur(20px) saturate(180%)',
@@ -495,7 +502,7 @@ function App() {
                 boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
               }}
             >
-              <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 2, flexWrap: 'wrap' }}>
+              <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 2, flexWrap: 'wrap', flexDirection: { xs: 'column', sm: 'row' } }}>
                 <TextField
                   fullWidth
                   label="搜尋關鍵字"
@@ -505,7 +512,8 @@ function App() {
                   onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                   placeholder="輸入影片關鍵字..."
                   sx={{ 
-                    flex: '1 1 300px',
+                    flex: { xs: '1 1 auto', sm: '1 1 300px' },
+                    width: { xs: '100%', sm: 'auto' },
                     '& .MuiOutlinedInput-root': {
                       background: 'rgba(255, 255, 255, 0.1)',
                       backdropFilter: 'blur(10px)',
@@ -535,7 +543,8 @@ function App() {
                 <FormControl 
                   variant="outlined" 
                   sx={{ 
-                    minWidth: 150,
+                    minWidth: { xs: '100%', sm: 150 },
+                    width: { xs: '100%', sm: 'auto' },
                     '& .MuiOutlinedInput-root': {
                       background: 'rgba(255, 255, 255, 0.1)',
                       backdropFilter: 'blur(10px)',
@@ -577,7 +586,8 @@ function App() {
                 <FormControl 
                   variant="outlined" 
                   sx={{ 
-                    minWidth: 180,
+                    minWidth: { xs: '100%', sm: 180 },
+                    width: { xs: '100%', sm: 'auto' },
                     '& .MuiOutlinedInput-root': {
                       background: 'rgba(255, 255, 255, 0.1)',
                       backdropFilter: 'blur(10px)',
@@ -629,7 +639,8 @@ function App() {
                     disabled={loading}
                     startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <SearchIcon />}
                     sx={{ 
-                      minWidth: 120,
+                      minWidth: { xs: '100%', sm: 120 },
+                      width: { xs: '100%', sm: 'auto' },
                       background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                       color: 'white',
                       fontWeight: 600,
@@ -739,7 +750,7 @@ function App() {
               initial="hidden"
               animate="visible"
             >
-              <Grid container spacing={3}>
+              <Grid container spacing={{ xs: 2, sm: 3 }}>
                 {videos.map((video, index) => (
                   <Grid item xs={12} sm={6} md={4} key={video.id}>
                     <motion.div
