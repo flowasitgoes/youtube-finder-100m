@@ -4,11 +4,6 @@
   "outputDirectory": "build",
   "installCommand": "npm install",
   "framework": null,
-  "functions": {
-    "api/index.js": {
-      "runtime": "nodejs22.x"
-    }
-  },
   "headers": [
     {
       "source": "/static/(.*)",
