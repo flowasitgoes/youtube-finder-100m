@@ -4,9 +4,19 @@ const serverless = require('serverless-http');
 const cors = require('cors');
 const axios = require('axios');
 const path = require('path');
-const searchHistory = require('../searchHistory');
-const apiStats = require('../apiStats');
-const searchRequestLog = require('../searchRequestLog');
+// 在 Vercel 上，这些文件应该在 api 目录下；本地开发时在项目根目录
+let searchHistory, apiStats, searchRequestLog;
+try {
+  // 先尝试从 api 目录加载（Vercel 部署时）
+  searchHistory = require('./searchHistory');
+  apiStats = require('./apiStats');
+  searchRequestLog = require('./searchRequestLog');
+} catch (error) {
+  // 如果失败，从项目根目录加载（本地开发）
+  searchHistory = require('../searchHistory');
+  apiStats = require('../apiStats');
+  searchRequestLog = require('../searchRequestLog');
+}
 
 // Load environment variables
 // 在 Vercel 上，优先使用环境变量；本地开发时尝试从 key.env 读取
@@ -76,7 +86,9 @@ async function searchVideos(query = '', maxResults = 50, minViewCount = 10000000
     const rawCount = allVideoIds.length;
 
     if (allVideoIds.length === 0) {
-      if (logData.shouldLog) {
+      // 只在本地开发环境记录日志，Vercel 部署时不记录
+      const isVercel = process.env.VERCEL === '1' || process.env.VERCEL_ENV;
+      if (logData.shouldLog && !isVercel) {
         searchRequestLog.logSearchRequest({
           query,
           maxResults,
@@ -139,7 +151,9 @@ async function searchVideos(query = '', maxResults = 50, minViewCount = 10000000
       viewCount: filteredVideos[0].viewCount
     } : null;
 
-    if (logData.shouldLog) {
+    // 只在本地开发环境记录日志，Vercel 部署时不记录
+    const isVercel = process.env.VERCEL === '1' || process.env.VERCEL_ENV;
+    if (logData.shouldLog && !isVercel) {
       searchRequestLog.logSearchRequest({
         query,
         maxResults,
