@@ -2,7 +2,10 @@ const fs = require('fs');
 const path = require('path');
 
 // 搜尋歷史檔案路徑
-const SEARCH_HISTORY_FILE = path.join(__dirname, 'search-history.json');
+// 在 Vercel 上，public 目錄會被部署，所以需要檢查多個路徑
+const SEARCH_HISTORY_FILE = fs.existsSync(path.join(__dirname, 'public', 'search-history.json'))
+  ? path.join(__dirname, 'public', 'search-history.json')
+  : path.join(__dirname, 'search-history.json');
 
 /**
  * 讀取搜尋歷史

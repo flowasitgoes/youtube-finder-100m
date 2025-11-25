@@ -2,7 +2,10 @@ const fs = require('fs');
 const path = require('path');
 
 // 搜尋和請求日誌檔案路徑
-const LOG_FILE = path.join(__dirname, 'search-request-log.json');
+// 在 Vercel 上，public 目錄會被部署，所以需要檢查多個路徑
+const LOG_FILE = fs.existsSync(path.join(__dirname, 'public', 'search-request-log.json'))
+  ? path.join(__dirname, 'public', 'search-request-log.json')
+  : path.join(__dirname, 'search-request-log.json');
 
 /**
  * 讀取日誌檔案

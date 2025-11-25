@@ -10,7 +10,7 @@
     "build": "react-scripts build",
     "start:react": "react-scripts start",
     "test": "react-scripts test",
-    "vercel-build": "npm install && npm run build"
+    "vercel-build": "npm run build"
   },
   "keywords": [
     "youtube",

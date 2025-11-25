@@ -1,0 +1,17 @@
+{
+  "short_name": "YouTube Finder",
+  "name": "YouTube 高點閱影片搜尋器",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#667eea",
+  "background_color": "#667eea"
+}
+
