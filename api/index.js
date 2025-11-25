@@ -181,7 +181,11 @@ app.get('/api/search', async (req, res) => {
       source: 'web' 
     });
     const videos = result.videos;
-    searchHistory.saveSearchHistory(query, videos, parseInt(maxResults));
+    // 只在本地开发环境保存搜索历史，Vercel 部署时不保存
+    const isVercel = process.env.VERCEL === '1' || process.env.VERCEL_ENV;
+    if (!isVercel) {
+      searchHistory.saveSearchHistory(query, videos, parseInt(maxResults));
+    }
     res.json({
       success: true,
       data: videos,
