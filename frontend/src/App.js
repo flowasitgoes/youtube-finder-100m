@@ -91,7 +91,7 @@ function App() {
   const [stats, setStats] = useState(null);
   const [searchHistory, setSearchHistory] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
-  const [maxResults, setMaxResults] = useState(100);
+  const [maxResults, setMaxResults] = useState(50);
   const [minViewCount, setMinViewCount] = useState(100000000);
 
   useEffect(() => {
@@ -154,7 +154,18 @@ function App() {
       } else if (err.response?.status === 403 || err.response?.data?.quotaExceeded) {
         setError('YouTube API 配額已用盡。每日配額為 10,000 單位，請等待明天重置，或使用左側的搜尋歷史查看之前的結果。');
       } else {
-        setError(err.response?.data?.message || err.message || '搜尋失敗，請稍後再試');
+        // 确保错误消息始终是字符串
+        let errorMessage = '搜尋失敗，請稍後再試';
+        if (err.response?.data?.message) {
+          errorMessage = typeof err.response.data.message === 'string' 
+            ? err.response.data.message 
+            : String(err.response.data.message || errorMessage);
+        } else if (err.message) {
+          errorMessage = typeof err.message === 'string' 
+            ? err.message 
+            : String(err.message || errorMessage);
+        }
+        setError(errorMessage);
       }
     } finally {
       setLoading(false);

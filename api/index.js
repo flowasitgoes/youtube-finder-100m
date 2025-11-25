@@ -206,10 +206,22 @@ app.get('/api/search', async (req, res) => {
         });
       }
     }
+    // 确保错误消息始终是字符串
+    let errorMessage = '未知錯誤';
+    if (error.response?.data?.error?.message) {
+      errorMessage = typeof error.response.data.error.message === 'string'
+        ? error.response.data.error.message
+        : String(error.response.data.error.message || '未知錯誤');
+    } else if (error.message) {
+      errorMessage = typeof error.message === 'string'
+        ? error.message
+        : String(error.message || '未知錯誤');
+    }
+    
     res.status(error.response?.status || 500).json({
       success: false,
       error: '搜尋失敗',
-      message: error.response?.data?.error?.message || error.message || '未知錯誤'
+      message: errorMessage
     });
   }
 });
