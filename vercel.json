@@ -4,6 +4,17 @@
   "outputDirectory": "frontend/build",
   "installCommand": "npm install && cd frontend && npm install",
   "framework": null,
+  "headers": [
+    {
+      "source": "/static/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    }
+  ],
   "rewrites": [
     {
       "source": "/api/(.*)",
@@ -18,7 +29,7 @@
       "destination": "/statistics.html"
     },
     {
-      "source": "/(.*)",
+      "source": "/((?!api|static|favicon|manifest|logs|statistics|.*\\.(js|css|ico|svg|json|png|jpg|jpeg|gif|webp)).*)",
       "destination": "/index.html"
     }
   ]
