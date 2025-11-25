@@ -398,17 +398,17 @@ app.delete('/api/logs', (req, res) => {
 });
 
 // 靜態文件服務（前端）
-app.use(express.static('frontend/build'));
-app.use(express.static('frontend/public'));
+app.use(express.static('build'));
+app.use(express.static('public'));
 
 // 日誌頁面路由
 app.get('/logs', (req, res) => {
-  res.sendFile(__dirname + '/frontend/public/logs.html');
+  res.sendFile(__dirname + '/public/logs.html');
 });
 
 // 統計頁面路由
 app.get('/statistics', (req, res) => {
-  res.sendFile(__dirname + '/frontend/public/statistics.html');
+  res.sendFile(__dirname + '/public/statistics.html');
 });
 
 // 處理前端路由（必須放在最後）
@@ -417,7 +417,7 @@ app.get('*', (req, res) => {
   if (req.path.startsWith('/api/') || req.path === '/logs' || req.path === '/statistics') {
     return res.status(404).json({ error: 'Not found' });
   }
-  res.sendFile(__dirname + '/frontend/build/index.html');
+  res.sendFile(__dirname + '/build/index.html');
 });
 
 app.listen(PORT, () => {

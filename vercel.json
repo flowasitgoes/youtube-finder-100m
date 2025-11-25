@@ -1,9 +1,14 @@
 {
   "version": 2,
   "buildCommand": "npm run vercel-build",
-  "outputDirectory": "frontend/build",
-  "installCommand": "npm install && cd frontend && npm install",
+  "outputDirectory": "build",
+  "installCommand": "npm install",
   "framework": null,
+  "functions": {
+    "api/index.js": {
+      "runtime": "nodejs18.x"
+    }
+  },
   "headers": [
     {
       "source": "/static/(.*)",

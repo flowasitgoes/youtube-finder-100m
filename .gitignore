@@ -9,15 +9,14 @@ search-request-log.json
 
 # Node modules
 node_modules/
-frontend/node_modules/
 
 # 環境變數檔案
 .env
-key.env
+# key.env - 需要上傳到 Vercel，所以不忽略
 
 # 建置檔案
-frontend/build/
-frontend/dist/
+build/
+dist/
 
 # 日誌檔案
 *.log

@@ -3,13 +3,14 @@
   "version": "2.0.0",
   "description": "YouTube 高點閱影片搜尋器 - 2025 現代化介面",
   "main": "server.js",
+  "private": true,
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "build": "cd frontend && (npm ci || npm install) && npm run build",
-    "build:frontend": "cd frontend && (npm ci || npm install) && npm run build",
-    "install-frontend": "cd frontend && npm install",
-    "vercel-build": "cd frontend && npm install && npm run build"
+    "build": "react-scripts build",
+    "start:react": "react-scripts start",
+    "test": "react-scripts test",
+    "vercel-build": "npm install && npm run build"
   },
   "keywords": [
     "youtube",
@@ -20,16 +21,43 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@emotion/react": "^11.11.0",
+    "@emotion/styled": "^11.11.0",
+    "@mui/icons-material": "^5.14.0",
+    "@mui/material": "^5.14.0",
     "axios": "^1.6.0",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
+    "framer-motion": "^10.16.16",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-scripts": "5.0.1",
     "serverless-http": "^3.2.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
   },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "proxy": "http://localhost:3001",
   "engines": {
-    "node": ">=18.0.0"
+    "node": "18.x"
   }
 }
