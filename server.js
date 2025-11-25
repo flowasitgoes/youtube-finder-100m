@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
+const path = require('path');
 const searchHistory = require('./searchHistory');
 const apiStats = require('./apiStats');
 const searchRequestLog = require('./searchRequestLog');
@@ -399,16 +400,16 @@ app.delete('/api/logs', (req, res) => {
 
 // 靜態文件服務（前端）
 app.use(express.static('build'));
-app.use(express.static('public'));
+app.use(express.static('src/public'));
 
 // 日誌頁面路由
 app.get('/logs', (req, res) => {
-  res.sendFile(__dirname + '/public/logs.html');
+  res.sendFile(path.join(__dirname, 'src', 'public', 'logs.html'));
 });
 
 // 統計頁面路由
 app.get('/statistics', (req, res) => {
-  res.sendFile(__dirname + '/public/statistics.html');
+  res.sendFile(path.join(__dirname, 'src', 'public', 'statistics.html'));
 });
 
 // 處理前端路由（必須放在最後）

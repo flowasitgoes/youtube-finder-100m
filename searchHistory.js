@@ -3,27 +3,47 @@ const path = require('path');
 
 // 搜尋歷史檔案路徑
 // 在 Vercel 上，需要檢查多個可能的路徑
+// 說明：
+// - 本地開發：searchHistory.js 在項目根目錄，__dirname = /project-root
+// - Vercel 部署：searchHistory.js 在 api/ 目錄，__dirname = /var/task/api
+// - process.cwd() 在兩種環境都是項目根目錄
 function getSearchHistoryFilePath() {
+  console.log('[SearchHistory] 開始查找搜尋歷史檔案...');
+  console.log('[SearchHistory] __dirname:', __dirname);
+  console.log('[SearchHistory] process.cwd():', process.cwd());
+  console.log('[SearchHistory] VERCEL 環境:', process.env.VERCEL || 'false');
+  
+  // 優先順序：src/public > src > 根目錄 > build
   const possiblePaths = [
-    path.join(__dirname, 'public', 'search-history.json'),
-    path.join(__dirname, 'src', 'search-history.json'),
-    path.join(__dirname, 'search-history.json'),
-    path.join(process.cwd(), 'public', 'search-history.json'),
+    // 本地：src/public/search-history.json，Vercel：/var/task/src/public/search-history.json
+    path.join(process.cwd(), 'src', 'public', 'search-history.json'),
+    // 本地：src/search-history.json，Vercel：/var/task/src/search-history.json
     path.join(process.cwd(), 'src', 'search-history.json'),
+    // 本地：__dirname/public/search-history.json（如果 searchHistory.js 在根目錄）
+    path.join(__dirname, 'public', 'search-history.json'),
+    // 本地：__dirname/src/search-history.json（如果 searchHistory.js 在根目錄）
+    path.join(__dirname, 'src', 'search-history.json'),
+    // 本地：__dirname/search-history.json（如果 searchHistory.js 在根目錄）
+    path.join(__dirname, 'search-history.json'),
+    // 本地：根目錄/search-history.json
     path.join(process.cwd(), 'search-history.json'),
+    // 本地：build/search-history.json
     path.join(process.cwd(), 'build', 'search-history.json')
   ];
   
+  console.log('[SearchHistory] 檢查以下路徑:');
   for (const filePath of possiblePaths) {
-    if (fs.existsSync(filePath)) {
-      console.log(`找到搜尋歷史檔案: ${filePath}`);
+    const exists = fs.existsSync(filePath);
+    console.log(`[SearchHistory]   ${exists ? '✓' : '✗'} ${filePath}`);
+    if (exists) {
+      console.log(`[SearchHistory] ✓ 找到搜尋歷史檔案: ${filePath}`);
       return filePath;
     }
   }
   
-  // 如果都不存在，返回默认路径（优先 public 目录）
-  const defaultPath = path.join(__dirname, 'public', 'search-history.json');
-  console.log(`使用預設搜尋歷史檔案路徑: ${defaultPath}`);
+  // 如果都不存在，返回默认路径（优先 src/public 目录）
+  const defaultPath = path.join(process.cwd(), 'src', 'public', 'search-history.json');
+  console.log(`[SearchHistory] ⚠ 未找到檔案，使用預設路徑: ${defaultPath}`);
   return defaultPath;
 }
 

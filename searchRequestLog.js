@@ -3,27 +3,47 @@ const path = require('path');
 
 // 搜尋和請求日誌檔案路徑
 // 在 Vercel 上，需要檢查多個可能的路徑
+// 說明：
+// - 本地開發：searchRequestLog.js 在項目根目錄，__dirname = /project-root
+// - Vercel 部署：searchRequestLog.js 在 api/ 目錄，__dirname = /var/task/api
+// - process.cwd() 在兩種環境都是項目根目錄
 function getLogFilePath() {
+  console.log('[SearchRequestLog] 開始查找日誌檔案...');
+  console.log('[SearchRequestLog] __dirname:', __dirname);
+  console.log('[SearchRequestLog] process.cwd():', process.cwd());
+  console.log('[SearchRequestLog] VERCEL 環境:', process.env.VERCEL || 'false');
+  
+  // 優先順序：src/public > src > 根目錄 > build
   const possiblePaths = [
-    path.join(__dirname, 'public', 'search-request-log.json'),
-    path.join(__dirname, 'src', 'search-request-log.json'),
-    path.join(__dirname, 'search-request-log.json'),
-    path.join(process.cwd(), 'public', 'search-request-log.json'),
+    // 本地：src/public/search-request-log.json，Vercel：/var/task/src/public/search-request-log.json
+    path.join(process.cwd(), 'src', 'public', 'search-request-log.json'),
+    // 本地：src/search-request-log.json，Vercel：/var/task/src/search-request-log.json
     path.join(process.cwd(), 'src', 'search-request-log.json'),
+    // 本地：__dirname/public/search-request-log.json（如果 searchRequestLog.js 在根目錄）
+    path.join(__dirname, 'public', 'search-request-log.json'),
+    // 本地：__dirname/src/search-request-log.json（如果 searchRequestLog.js 在根目錄）
+    path.join(__dirname, 'src', 'search-request-log.json'),
+    // 本地：__dirname/search-request-log.json（如果 searchRequestLog.js 在根目錄）
+    path.join(__dirname, 'search-request-log.json'),
+    // 本地：根目錄/search-request-log.json
     path.join(process.cwd(), 'search-request-log.json'),
+    // 本地：build/search-request-log.json
     path.join(process.cwd(), 'build', 'search-request-log.json')
   ];
   
+  console.log('[SearchRequestLog] 檢查以下路徑:');
   for (const filePath of possiblePaths) {
-    if (fs.existsSync(filePath)) {
-      console.log(`找到日誌檔案: ${filePath}`);
+    const exists = fs.existsSync(filePath);
+    console.log(`[SearchRequestLog]   ${exists ? '✓' : '✗'} ${filePath}`);
+    if (exists) {
+      console.log(`[SearchRequestLog] ✓ 找到日誌檔案: ${filePath}`);
       return filePath;
     }
   }
   
-  // 如果都不存在，返回默认路径（优先 public 目录）
-  const defaultPath = path.join(__dirname, 'public', 'search-request-log.json');
-  console.log(`使用預設日誌檔案路徑: ${defaultPath}`);
+  // 如果都不存在，返回默认路径（优先 src/public 目录）
+  const defaultPath = path.join(process.cwd(), 'src', 'public', 'search-request-log.json');
+  console.log(`[SearchRequestLog] ⚠ 未找到檔案，使用預設路徑: ${defaultPath}`);
   return defaultPath;
 }
 
