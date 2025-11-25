@@ -1,0 +1,31 @@
+{
+  "version": 2,
+  "buildCommand": "cd frontend && npm install && npm run build",
+  "outputDirectory": "frontend/build",
+  "installCommand": "npm install && cd frontend && npm install",
+  "framework": null,
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/logs",
+      "destination": "/logs.html"
+    },
+    {
+      "source": "/statistics",
+      "destination": "/statistics.html"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ],
+  "functions": {
+    "api/index.js": {
+      "runtime": "nodejs18.x"
+    }
+  }
+}
+
