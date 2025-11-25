@@ -58,6 +58,6 @@
   },
   "proxy": "http://localhost:3001",
   "engines": {
-    "node": "18.x"
+    "node": "22.x"
   }
 }
