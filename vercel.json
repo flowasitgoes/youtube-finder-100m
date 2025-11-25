@@ -29,7 +29,7 @@
       "destination": "/statistics.html"
     },
     {
-      "source": "/((?!api|static|favicon|manifest|logs|statistics|.*\\.(js|css|ico|svg|json|png|jpg|jpeg|gif|webp|html)).*)",
+      "source": "/(.*)",
       "destination": "/index.html"
     }
   ]
