@@ -368,6 +368,26 @@ html {
   /* 侧边栏按钮位置优化 */
   .MuiIconButton-root {
     padding: 8px !important;
+    min-width: 48px !important;
+    min-height: 48px !important;
+    touch-action: manipulation; /* 优化移动端触摸响应 */
+  }
+  
+  /* 确保关闭按钮在移动端可以顺利点击 */
+  .MuiDrawer-paper .MuiToolbar-root .MuiIconButton-root {
+    min-width: 48px !important;
+    min-height: 48px !important;
+    padding: 12px !important;
+    z-index: 1301 !important;
+    position: relative !important;
+  }
+  
+  /* 确保打开菜单按钮在移动端可以顺利点击 */
+  button[aria-label="開啟搜尋歷史"] {
+    min-width: 48px !important;
+    min-height: 48px !important;
+    padding: 12px !important;
+    touch-action: manipulation !important;
   }
 
   /* 视频标题优化 */

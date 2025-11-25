@@ -95,11 +95,20 @@ function App() {
   const [minViewCount, setMinViewCount] = useState(100000000);
 
   useEffect(() => {
-    setSidebarOpen(!isMobile);
+    // 桌面版保持侧边栏常开，移动端默认关闭
+    if (!isMobile) {
+      setSidebarOpen(true);
+    } else {
+      setSidebarOpen(false);
+    }
   }, [isMobile]);
 
   const handleSearch = async (searchQuery = null, historyId = null) => {
-    const queryToSearch = String(searchQuery || query || '').trim();
+    // 确保 searchQuery 始终是字符串
+    const normalizedQuery = searchQuery 
+      ? (typeof searchQuery === 'string' ? searchQuery : String(searchQuery || ''))
+      : null;
+    const queryToSearch = String(normalizedQuery || query || '').trim();
     if (!queryToSearch) {
       setError('請輸入搜尋關鍵字');
       return;
@@ -108,8 +117,9 @@ function App() {
     setLoading(true);
     setError('');
     setSearchPerformed(true);
-    if (searchQuery) {
-      setQuery(searchQuery);
+    // 确保设置到 state 的 query 始终是字符串
+    if (normalizedQuery) {
+      setQuery(queryToSearch);
     }
 
     try {
@@ -118,6 +128,13 @@ function App() {
       if (historyId) {
         response = await axios.get(`/api/history/${historyId}`);
         console.log('從歷史記錄載入:', response.data.message);
+        // 如果从历史记录加载，使用返回的 query（确保是字符串）
+        if (response.data.query) {
+          const historyQuery = typeof response.data.query === 'string' 
+            ? response.data.query 
+            : String(response.data.query || '');
+          setQuery(historyQuery);
+        }
       } else {
         response = await axios.get('/api/search', {
           params: {
@@ -169,7 +186,12 @@ function App() {
   const loadHistory = async () => {
     try {
       const response = await axios.get('/api/history?limit=10');
-      setSearchHistory(response.data.data);
+      // 确保 query 字段是字符串，防止显示 [object Object]
+      const history = response.data.data.map(record => ({
+        ...record,
+        query: typeof record.query === 'string' ? record.query : String(record.query || '未知查詢')
+      }));
+      setSearchHistory(history);
     } catch (err) {
       console.error('載入搜尋歷史失敗:', err);
     }
@@ -232,10 +254,23 @@ function App() {
       <Drawer
         variant={isMobile ? "temporary" : "persistent"}
         open={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
+        onClose={() => {
+          // 桌面版不允许关闭侧边栏
+          if (isMobile) {
+            setSidebarOpen(false);
+          }
+        }}
+        ModalProps={{
+          keepMounted: true, // 移动端保持 DOM 结构，提升性能
+        }}
         sx={{
-          width: { xs: '100%', sm: drawerWidth },
+          width: { xs: '100%', sm: sidebarOpen ? drawerWidth : 0 },
           flexShrink: 0,
+          transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          '& .MuiBackdrop-root': {
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            zIndex: 1199,
+          },
           '& .MuiDrawer-paper': {
             width: { xs: '100%', sm: drawerWidth },
             boxSizing: 'border-box',
@@ -246,14 +281,18 @@ function App() {
             WebkitBackdropFilter: 'blur(20px) saturate(180%)',
             borderRight: '1px solid rgba(255, 255, 255, 0.2)',
             zIndex: { xs: 1200, sm: 'auto' },
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+            transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           },
         }}
       >
         <Toolbar sx={{ 
           justifyContent: 'space-between', 
           borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
-          background: 'rgba(255, 255, 255, 0.05)'
+          background: 'rgba(255, 255, 255, 0.05)',
+          position: 'relative',
+          zIndex: 1300,
+          minHeight: { xs: '56px', sm: '64px' }
         }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
             <Typography variant="h6" sx={{ fontWeight: 700, color: 'white' }}>
@@ -270,9 +309,28 @@ function App() {
               </IconButton>
             </a>
           </Box>
-          <IconButton onClick={() => setSidebarOpen(false)} sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
-            <CloseIcon />
-          </IconButton>
+          {isMobile && (
+            <IconButton 
+              onClick={() => setSidebarOpen(false)} 
+              sx={{ 
+                color: 'rgba(255, 255, 255, 0.9)',
+                position: 'relative',
+                zIndex: 1301,
+                minWidth: '48px',
+                minHeight: '48px',
+                padding: '12px',
+                '&:hover': {
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                },
+                '&:active': {
+                  backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                }
+              }}
+              aria-label="關閉側邊欄"
+            >
+              <CloseIcon />
+            </IconButton>
+          )}
         </Toolbar>
         <Box sx={{ overflow: 'auto', p: 2 }}>
           {searchHistory.length > 0 ? (
@@ -308,7 +366,13 @@ function App() {
                         style={{ width: '100%' }}
                       >
                         <ListItemButton
-                          onClick={() => handleSearch(record.query, record.id)}
+                          onClick={() => {
+                            // 确保 record.query 是字符串
+                            const queryString = typeof record.query === 'string' 
+                              ? record.query 
+                              : String(record.query || '');
+                            handleSearch(queryString, record.id);
+                          }}
                           sx={{
                             borderRadius: 2,
                             mb: 0.5,
@@ -324,7 +388,7 @@ function App() {
                           <ListItemText
                             primary={
                               <Typography variant="body1" sx={{ fontWeight: 600, color: 'white' }}>
-                                {record.query}
+                                {typeof record.query === 'string' ? record.query : String(record.query || '未知查詢')}
                               </Typography>
                             }
                             secondary={
@@ -357,19 +421,22 @@ function App() {
         component="main"
         sx={{
           flexGrow: 1,
-          width: { sm: `calc(100% - ${sidebarOpen ? drawerWidth : 0}px)` },
+          width: { 
+            xs: '100%',
+            sm: sidebarOpen ? `calc(100% - ${drawerWidth}px)` : '100%'
+          },
           transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           position: 'relative',
-          zIndex: 1
+          zIndex: 1,
+          overflow: 'hidden'
         }}
       >
         <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 }, px: { xs: 2, sm: 3 } }}>
-          {!sidebarOpen && (
+          {!sidebarOpen && isMobile && (
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
+              whileTap={{ opacity: 0.7 }}
             >
               <IconButton
                 onClick={() => setSidebarOpen(true)}
@@ -383,8 +450,17 @@ function App() {
                   border: '1px solid rgba(255, 255, 255, 0.2)',
                   color: 'white',
                   boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
-                  '&:hover': {
-                    background: 'rgba(255, 255, 255, 0.25)',
+                  minWidth: '48px',
+                  minHeight: '48px',
+                  padding: '12px',
+                  '&:active': {
+                    background: 'rgba(255, 255, 255, 0.35)',
+                  },
+                  // 移除 hover 效果，避免移动端触发
+                  '@media (hover: hover) and (pointer: fine)': {
+                    '&:hover': {
+                      background: 'rgba(255, 255, 255, 0.25)',
+                    },
                   }
                 }}
                 aria-label="開啟搜尋歷史"

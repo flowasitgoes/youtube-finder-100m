@@ -234,7 +234,8 @@ app.get('/api/history', (req, res) => {
     const history = searchHistory.readSearchHistory();
     const limitedHistory = history.slice(0, parseInt(limit)).map(record => ({
       id: record.id,
-      query: record.query,
+      // 确保 query 是字符串，防止显示 [object Object]
+      query: typeof record.query === 'string' ? record.query : String(record.query || '未知查詢'),
       timestamp: record.timestamp,
       resultCount: record.resultCount,
       maxResults: record.maxResults
