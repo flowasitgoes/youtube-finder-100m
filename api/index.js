@@ -9,7 +9,14 @@ const apiStats = require('../apiStats');
 const searchRequestLog = require('../searchRequestLog');
 
 // Load environment variables
-require('dotenv').config({ path: path.join(__dirname, '../key.env') });
+// 在 Vercel 上，优先使用环境变量；本地开发时尝试从 key.env 读取
+if (!process.env.VERCEL && !process.env.YOUTUBE_API_KEY) {
+  try {
+    require('dotenv').config({ path: path.join(__dirname, '../key.env') });
+  } catch (error) {
+    console.log('无法从 key.env 读取环境变量，使用默认值或环境变量');
+  }
+}
 
 const app = express();
 
@@ -18,6 +25,7 @@ app.use(cors());
 app.use(express.json());
 
 // YouTube Data API key
+// 优先使用环境变量（Vercel 会自动注入），否则使用 key.env 或默认值
 const API_KEY = process.env.YOUTUBE_API_KEY || 'AIzaSyCR5TNSzSDe5T0bJk16H9_oz1QSZsTX3CI';
 const BASE_URL = 'https://www.googleapis.com/youtube/v3';
 

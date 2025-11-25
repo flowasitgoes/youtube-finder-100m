@@ -2,10 +2,32 @@ const fs = require('fs');
 const path = require('path');
 
 // 搜尋歷史檔案路徑
-// 在 Vercel 上，public 目錄會被部署，所以需要檢查多個路徑
-const SEARCH_HISTORY_FILE = fs.existsSync(path.join(__dirname, 'public', 'search-history.json'))
-  ? path.join(__dirname, 'public', 'search-history.json')
-  : path.join(__dirname, 'search-history.json');
+// 在 Vercel 上，需要檢查多個可能的路徑
+function getSearchHistoryFilePath() {
+  const possiblePaths = [
+    path.join(__dirname, 'public', 'search-history.json'),
+    path.join(__dirname, 'src', 'search-history.json'),
+    path.join(__dirname, 'search-history.json'),
+    path.join(process.cwd(), 'public', 'search-history.json'),
+    path.join(process.cwd(), 'src', 'search-history.json'),
+    path.join(process.cwd(), 'search-history.json'),
+    path.join(process.cwd(), 'build', 'search-history.json')
+  ];
+  
+  for (const filePath of possiblePaths) {
+    if (fs.existsSync(filePath)) {
+      console.log(`找到搜尋歷史檔案: ${filePath}`);
+      return filePath;
+    }
+  }
+  
+  // 如果都不存在，返回默认路径（优先 public 目录）
+  const defaultPath = path.join(__dirname, 'public', 'search-history.json');
+  console.log(`使用預設搜尋歷史檔案路徑: ${defaultPath}`);
+  return defaultPath;
+}
+
+const SEARCH_HISTORY_FILE = getSearchHistoryFilePath();
 
 /**
  * 讀取搜尋歷史

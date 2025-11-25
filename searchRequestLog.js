@@ -2,10 +2,32 @@ const fs = require('fs');
 const path = require('path');
 
 // 搜尋和請求日誌檔案路徑
-// 在 Vercel 上，public 目錄會被部署，所以需要檢查多個路徑
-const LOG_FILE = fs.existsSync(path.join(__dirname, 'public', 'search-request-log.json'))
-  ? path.join(__dirname, 'public', 'search-request-log.json')
-  : path.join(__dirname, 'search-request-log.json');
+// 在 Vercel 上，需要檢查多個可能的路徑
+function getLogFilePath() {
+  const possiblePaths = [
+    path.join(__dirname, 'public', 'search-request-log.json'),
+    path.join(__dirname, 'src', 'search-request-log.json'),
+    path.join(__dirname, 'search-request-log.json'),
+    path.join(process.cwd(), 'public', 'search-request-log.json'),
+    path.join(process.cwd(), 'src', 'search-request-log.json'),
+    path.join(process.cwd(), 'search-request-log.json'),
+    path.join(process.cwd(), 'build', 'search-request-log.json')
+  ];
+  
+  for (const filePath of possiblePaths) {
+    if (fs.existsSync(filePath)) {
+      console.log(`找到日誌檔案: ${filePath}`);
+      return filePath;
+    }
+  }
+  
+  // 如果都不存在，返回默认路径（优先 public 目录）
+  const defaultPath = path.join(__dirname, 'public', 'search-request-log.json');
+  console.log(`使用預設日誌檔案路徑: ${defaultPath}`);
+  return defaultPath;
+}
+
+const LOG_FILE = getLogFilePath();
 
 /**
  * 讀取日誌檔案
